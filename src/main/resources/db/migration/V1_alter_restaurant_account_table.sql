@@ -1,0 +1,1 @@
+ALTER TABLE restaurant_account ADD COLUMN api_key VARCHAR(24) NOT NULL;

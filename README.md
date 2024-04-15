@@ -1,5 +1,15 @@
 # Restaurant API
 
+## How To Run
+
+### With Docker
+1. Clone this repository `git clone https://github.com/JoshuaPangaribuan/restaurant-api.git`
+2. Go to the project directory `cd restaurant-api`
+3. Install Makefile on [Windows](https://stackoverflow.com/questions/2532234/how-to-run-a-makefile-in-windows) or [Linux](https://stackoverflow.com/questions/11934997/how-to-install-make-in-windows-7)
+4. Run `make build-docker` to build the docker image
+5. Run `make local-docker` to run the docker container
+6. The application will be running on `http://localhost:8081`
+
 ## Dependency
 
 | Nama                         | Deskripsi                                                                                                                 | Versi       | Official Documentation                                                                           |

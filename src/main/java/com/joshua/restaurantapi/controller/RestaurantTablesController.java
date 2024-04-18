@@ -5,8 +5,8 @@ import com.joshua.restaurantapi.common.QRGenerator.QRGenerator;
 import com.joshua.restaurantapi.common.QRGenerator.ZXingQRCode;
 import com.joshua.restaurantapi.common.validation.HttpResponse;
 import com.joshua.restaurantapi.component.ApplicationContextProvider;
-import com.joshua.restaurantapi.model.RestaurantAccount;
-import com.joshua.restaurantapi.model.RestaurantTables;
+import com.joshua.restaurantapi.entity.RestaurantAccount;
+import com.joshua.restaurantapi.entity.RestaurantTables;
 import com.joshua.restaurantapi.repository.RestaurantAccountRepository;
 import com.joshua.restaurantapi.repository.RestaurantTablesRepository;
 import jakarta.annotation.PostConstruct;
@@ -34,8 +34,8 @@ public class RestaurantTablesController {
     public QRGenerator qrGenerator;
 
     public RestaurantTablesController(RestaurantTablesRepository tablesRepository,
-                                      RestaurantAccountRepository accountRepository,
-                                      ApplicationContextProvider contextProvider) {
+            RestaurantAccountRepository accountRepository,
+            ApplicationContextProvider contextProvider) {
         this.tablesRepository = tablesRepository;
         this.accountRepository = accountRepository;
         this.contextProvider = contextProvider;
@@ -48,8 +48,7 @@ public class RestaurantTablesController {
 
     @PostMapping(value = "/create", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> createRestaurantTable(
-            @RequestBody TablesRequest table
-    ) {
+            @RequestBody TablesRequest table) {
         Optional<RestaurantAccount> account = accountRepository.findById(table.getRestaurantID());
         if (account.isPresent()) {
             table.getTable().setRestaurantAccount(account.get());
@@ -65,8 +64,7 @@ public class RestaurantTablesController {
 
     @PostMapping(value = "/bulk-create", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> createRestaurantTables(
-            @RequestBody BulkRequest tables
-    ) {
+            @RequestBody BulkRequest tables) {
         Optional<RestaurantAccount> account = accountRepository.findById(tables.getRestaurantID());
         if (account.isPresent()) {
             tables.getTable().forEach(table -> table.setRestaurantAccount(account.get()));
@@ -82,8 +80,7 @@ public class RestaurantTablesController {
 
     @DeleteMapping(value = "/delete", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> deleteRestaurantTable(
-            @RequestBody TablesRequest table
-    ) throws Exception {
+            @RequestBody TablesRequest table) throws Exception {
         Optional<RestaurantTables> restaurantTable = tablesRepository.findById(table.getTable().getTableID());
         if (restaurantTable.isPresent()) {
             qrGenerator.deleteQRCode(restaurantTable.get().getQrPath());
@@ -98,16 +95,15 @@ public class RestaurantTablesController {
 
     @DeleteMapping(value = "/bulk-delete", consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> deleteRestaurantTables(
-            @RequestBody BulkRequest tables
-    ) throws Exception {
+            @RequestBody BulkRequest tables) throws Exception {
         List<RestaurantTables> restaurantTables = tablesRepository
                 .findAllById(tables.getTable().stream().map(RestaurantTables::getTableID).toList());
 
         if (!restaurantTables.isEmpty()) {
 
             qrGenerator.deleteBulkQRCode(restaurantTables
-                            .stream().map(RestaurantTables::getQrPath)
-                            .toArray(String[]::new));
+                    .stream().map(RestaurantTables::getQrPath)
+                    .toArray(String[]::new));
 
             tablesRepository.deleteAll(restaurantTables);
 
@@ -119,11 +115,9 @@ public class RestaurantTablesController {
                 "Successfully"), HttpStatus.NOT_FOUND);
     }
 
-
     @GetMapping(value = "/get-all/{restaurantID}", produces = "application/json")
     public ResponseEntity<?> getRestaurantTables(
-            @PathVariable("restaurantID") String restaurantID
-    ) {
+            @PathVariable("restaurantID") String restaurantID) {
         Optional<RestaurantAccount> account = accountRepository.findById(restaurantID);
         if (account.isPresent()) {
             return new ResponseEntity<>(account.get().getRestaurantTables(), HttpStatus.OK);
@@ -135,17 +129,16 @@ public class RestaurantTablesController {
 
     @GetMapping(value = "/view-qr")
     public ResponseEntity<?> viewQRCode(
-            @RequestParam("qrPath") String qrPath
-    ) {
+            @RequestParam("qrPath") String qrPath) {
         HttpHeaders headers = new HttpHeaders();
         try {
             byte[] qrBytes = this.qrGenerator.viewQRCode(qrPath);
             headers.setContentType(MediaType.IMAGE_PNG);
-            return new ResponseEntity<>(qrBytes,headers, HttpStatus.OK);
+            return new ResponseEntity<>(qrBytes, headers, HttpStatus.OK);
         } catch (Exception e) {
             headers.setContentType(MediaType.APPLICATION_JSON);
             return new ResponseEntity<>(new HttpResponse(String.valueOf(HttpStatus.NOT_FOUND.value()),
-                    "QR Code not found."),headers, HttpStatus.NOT_FOUND);
+                    "QR Code not found."), headers, HttpStatus.NOT_FOUND);
         }
     }
 }

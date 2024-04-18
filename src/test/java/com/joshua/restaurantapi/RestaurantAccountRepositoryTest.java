@@ -1,6 +1,6 @@
 package com.joshua.restaurantapi;
 
-import com.joshua.restaurantapi.model.RestaurantAccount;
+import com.joshua.restaurantapi.entity.RestaurantAccount;
 import com.joshua.restaurantapi.repository.RestaurantAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

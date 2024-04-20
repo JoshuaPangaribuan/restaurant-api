@@ -7,10 +7,11 @@ build-docker:
 	docker build -t $(DOCKER_IMAGE) .
 
 run-compose:
-	mvn package
-	docker-compose up
+	mvn package -DskipTests=true
+	docker-compose up --detach
 
-local-docker:
+run-docker:
+	make build-docker
 	docker network create --driver bridge $(RUNNING_CONTAINER_NAME)
 	docker run --name $(RUNNING_CONTAINER_NAME) \
 		-e app.port=$(PORT) \
@@ -25,4 +26,10 @@ cleanup-docker:
 	docker volume prune -f
 	docker network prune -f
 
-PHONY: build-docker run-compose local-docker cleanup-docker
+cleanup-compose:
+	docker-compose down
+	docker system prune -fa
+	docker volume prune -f
+	docker network prune -f
+
+PHONY: build-docker run-compose run-docker cleanup-docker cleanup-compose

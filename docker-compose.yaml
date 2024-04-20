@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  restaurant-api:
+    image: joshuapangaribuan/restaurant-api:latest
+    build:
+      context: .
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    networks:
+      - restaurant-api-network
+    depends_on:
+      - minio
+
+  minio:
+    image: bitnami/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_DATA_DIR=/bitnami/minio/data
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio123
+    volumes:
+      - './minio_data:/bitnami/minio/data'
+    networks:
+        - restaurant-api-network
+
+
+
+networks:
+  restaurant-api-network:
+    driver: bridge
+
+volumes:
+    minio_data:
+        driver: local

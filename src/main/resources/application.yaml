@@ -28,3 +28,7 @@ server:
 logging:
   level:
     root: ${app.log.level:info}
+minio:
+  access-key: ${minio.access-key:minio}
+  secret-key: ${minio.secret-key:secret123}
+  qr-bucket: ${minio.qr-bucket:qr-code}

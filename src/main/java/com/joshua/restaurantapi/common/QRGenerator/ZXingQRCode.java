@@ -4,6 +4,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import io.minio.MinioClient;
 import lombok.Cleanup;
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -23,9 +24,11 @@ import java.util.Base64;
 public class ZXingQRCode implements QRGenerator {
 
     private Path PATH;
+    private MinioClient qrBucket;
 
-    public ZXingQRCode()throws Exception{
+    public ZXingQRCode(MinioClient minioClient)throws Exception{
         String path = System.getProperty("user.dir") + "/QRCode";
+        this.qrBucket = minioClient;
         this.PATH = Paths.get(path);
 
         if (!Files.exists(this.PATH)){

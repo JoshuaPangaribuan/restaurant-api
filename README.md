@@ -6,9 +6,16 @@
 1. Clone this repository `git clone https://github.com/JoshuaPangaribuan/restaurant-api.git`
 2. Go to the project directory `cd restaurant-api`
 3. Install Makefile on [Windows](https://stackoverflow.com/questions/2532234/how-to-run-a-makefile-in-windows) or [Linux](https://stackoverflow.com/questions/11934997/how-to-install-make-in-windows-7)
-4. Run `make build-docker` to build the docker image
-5. Run `make local-docker` to run the docker container
-6. The application will be running on `http://localhost:8081`
+4. Run `make run-docker` to run the docker container
+5. The application will be running on `http://localhost:8081`
+
+### With Docker Compose
+1. Clone this repository `git clone https://github.com/JoshuaPangaribuan/restaurant-api.git`
+2. Go to the project directory `cd restaurant-api`
+3. Install Docker Compose on [Windows](https://docs.docker.com/compose/install/) or [Linux](https://docs.docker.com/compose/install/)
+4. Run `make run-compose` to run the project
+5. The application will be running on `http://localhost:8081`
+6. Validate the application by running `docker ps -a` and check if the container is running
 
 ## Dependency
 
@@ -26,3 +33,4 @@
 | mockito-core                 | Most popular Mocking framework for unit tests written in Java                                                             | 3.12.4      | [docs](https://site.mockito.org/)                                                                |
 | zxing-core                   | ZXing ("Zebra Crossing") barcode scanning library for Java, Android                                                       | 3.4.1       | [docs](https://zxing.github.io/zxing/)                                                           |
 | zxing-javase                 | ZXing ("Zebra Crossing") barcode scanning library for Java, Android                                                       | 3.4.1       | [docs](https://zxing.github.io/zxing/)                                                           |
+| minio                        | MinIO is a High Performance Object Storage, built for cloud applications and DevOps                                       | 8.3.0       | [docs](https://docs.min.io/)                                                                     |

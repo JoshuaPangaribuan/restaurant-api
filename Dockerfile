@@ -1,8 +1,5 @@
 # Start with a base image containing Java runtime
-# Uncomment this line if you on windows
-# FROM openjdk:17-jdk-alpine 
 
-# Uncomment this line if you on linux / mac
 FROM openjdk:17-jdk-slim
 
 # Add Maintainer Info

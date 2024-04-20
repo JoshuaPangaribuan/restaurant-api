@@ -1,5 +1,5 @@
 RUNNING_CONTAINER_NAME = "restaurant-api"
-DOCKER_IMAGE = "restaurant-api:latest"
+DOCKER_IMAGE = "joshuapangaribuan/restaurant-api:latest"
 PORT = 8081
 
 build-docker:

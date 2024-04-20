@@ -33,4 +33,7 @@ build/
 .vscode/
 
 ### QRCode Folder ###
-QRCode/
+QRCode/*
+
+### Minio ###
+minio-data/*

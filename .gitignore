@@ -36,4 +36,4 @@ build/
 QRCode/*
 
 ### Minio ###
-minio-data/*
+minio_data/*

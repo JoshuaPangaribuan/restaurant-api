@@ -4,7 +4,12 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.joshua.restaurantapi.configuration.MinioConfiguration;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
+import io.minio.RemoveObjectArgs;
+import io.minio.UploadObjectArgs;
+import io.minio.http.Method;
 import lombok.Cleanup;
 import lombok.Data;
 import org.springframework.stereotype.Component;
@@ -13,6 +18,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,28 +28,43 @@ import java.util.Base64;
 @Data
 @Component
 public class ZXingQRCode implements QRGenerator {
-
-    private Path PATH;
     private MinioClient qrBucket;
-
-    public ZXingQRCode(MinioClient minioClient)throws Exception{
-        String path = System.getProperty("user.dir") + "/QRCode";
+    private String bucketName;
+    public ZXingQRCode(MinioClient minioClient, MinioConfiguration minioConfiguration)throws Exception{
         this.qrBucket = minioClient;
-        this.PATH = Paths.get(path);
-
-        if (!Files.exists(this.PATH)){
-            Files.createDirectories(this.PATH);
-        }
+        this.bucketName = minioConfiguration.getQrBucket();
     }
     @Override
     public String generateQRCode(String text, int width, int height, String fileName) throws Exception {
         QRCodeWriter qrWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
 
-        Path finalPath = this.PATH.resolve(fileName + ".png");
-        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", finalPath);
+        // Create a temporary file
+        Path tempPath = Files.createTempFile(fileName, ".png");
+        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", tempPath);
 
-        byte[] finalPathBytes = finalPath.toString().getBytes(StandardCharsets.UTF_8);
+        // Upload the file to Minio
+        qrBucket.uploadObject(
+                UploadObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(fileName + ".png")
+                        .filename(tempPath.toString())
+                        .build()
+        );
+
+        // Get presigned URL
+        String url = qrBucket.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Method.GET)
+                        .bucket(bucketName)
+                        .object(fileName + ".png")
+                        .build()
+        );
+
+        // Delete the temporary file
+        Files.delete(tempPath);
+
+        byte[] finalPathBytes = url.getBytes(StandardCharsets.UTF_8);
 
         return Base64.getEncoder().encodeToString(finalPathBytes);
     }
@@ -51,9 +72,11 @@ public class ZXingQRCode implements QRGenerator {
     @Override
     public byte[] viewQRCode(String qrPath) throws Exception {
         byte[] decodeBytes = Base64.getDecoder().decode(qrPath);
-        String decodedPath = new String(decodeBytes, StandardCharsets.UTF_8);
+        String decodeURL = new String(decodeBytes, StandardCharsets.UTF_8);
 
-        BufferedImage bufferedImage = ImageIO.read(new File(decodedPath));
+        URL url = new URL(decodeURL);
+
+        BufferedImage bufferedImage = ImageIO.read(url);
         @Cleanup ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(bufferedImage, "png", byteArrayOutputStream);
 
@@ -62,10 +85,26 @@ public class ZXingQRCode implements QRGenerator {
     }
 
     @Override
-    public boolean deleteQRCode(String qrPath) throws Exception {
-        String decodedPath = this.decodePath(qrPath);
-        Path path = Paths.get(decodedPath);
-        return Files.deleteIfExists(path);
+    public boolean deleteQRCode(String qrPath) {
+        try{
+            byte[] decodeBytes = Base64.getDecoder().decode(qrPath);
+            String decodeURL = new String(decodeBytes, StandardCharsets.UTF_8);
+
+            URL url = new URL(decodeURL);
+            String fileName = Paths.get(url.getPath()).getFileName().toString();
+
+            qrBucket.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(fileName)
+                            .build()
+            );
+        } catch (Exception e){
+            System.out.println("Error deleting QR Code: " + e.getMessage());
+            return false;
+        }
+
+        return true;
     }
 
     @Override

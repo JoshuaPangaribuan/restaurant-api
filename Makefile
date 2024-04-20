@@ -7,7 +7,7 @@ build-docker:
 	docker build -t $(DOCKER_IMAGE) .
 
 run-compose:
-	mvn package -DskipTests=true
+	mvn package
 	docker-compose up --detach
 
 run-docker:
